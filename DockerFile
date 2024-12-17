@@ -1,0 +1,26 @@
+# node.js base image 
+FROM node:14-alpine
+# server info
+RUN node -v
+RUN npm -v
+
+# working directory
+RUN mkdir /app
+RUN chown -R node:node /app
+WORKDIR /app
+# switch to user node
+USER node
+ADD --chown=node:node ./src ./src
+COPY --chown=node:node ./*.json ./
+# install dependencies for build
+RUN npm install --development
+RUN npm install @nestjs/cli
+RUN npm run build
+RUN rm -r ./src ./node_modules ./tsconfig*.json ./nest-cli.json
+COPY .env .env
+# install prod dependencies
+RUN npm install --production
+
+# start server
+CMD [ "npm", "run", "start:prod" ]
+# CMD ["sh"]
